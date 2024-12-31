@@ -7,22 +7,32 @@
     "test": "deno test --coverage --clean",
     "coverage": {
       "command": "deno coverage",
-      "dependencies": ["test"]
+      "dependencies": [
+        "test"
+      ]
     },
     "coverage-html": {
       "command": "deno coverage --html",
-      "dependencies": ["test"]
+      "dependencies": [
+        "test"
+      ]
     }
   },
   "lint": {
     "rules": {
-      "exclude": ["no-explicit-any"]
+      "exclude": [
+        "no-explicit-any"
+      ]
     }
   },
   "fmt": {
     "lineWidth": 80
   },
   "publish": {
-    "exclude": ["_tests/", "scripts/", "./.github"]
+    "exclude": [
+      "_tests/",
+      "scripts/",
+      "./.github"
+    ]
   }
 }
