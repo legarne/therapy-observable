@@ -14,7 +14,7 @@ and is lightwight, utilizing basic classes.
 ## Installation
 
 ```bash
-deno install jsr:@therapy/observable
+deno add jsr:@therapy/observable
 ```
 
 ### Usage and Examples
