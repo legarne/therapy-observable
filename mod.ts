@@ -1,5 +1,9 @@
 type Nullish<T> = T | undefined | null;
-type Callback<T> = (arg: T) => void;
+
+/**
+ * Default callback type for listeners by Observable-type classes
+ */
+export type Callback<T> = (arg: T) => void;
 
 /**
  * @therapy/observable is an implementation of the observer pattern for simple state management. It has zero-dependencies
@@ -15,7 +19,10 @@ type Callback<T> = (arg: T) => void;
  * @template T - The type of the observable value.
  */
 export class Observable<T> {
-  #listeners = new Set<Callback<T>>();
+  /**
+   * Collection of listeners on this observable
+   */
+  listeners: Set<Callback<T>> = new Set<Callback<T>>();
 
   #value: T;
 
@@ -35,7 +42,7 @@ export class Observable<T> {
    */
   set value(newValue: T) {
     this.#value = newValue;
-    this.#listeners.forEach((listener) => listener(this.#value));
+    this.listeners.forEach((listener) => listener(this.#value));
   }
 
   /**
@@ -53,7 +60,7 @@ export class Observable<T> {
    * @param {Callback<T>} callback - The function to be called on value changes.
    */
   listen(callback: Callback<T>) {
-    this.#listeners.add(callback);
+    this.listeners.add(callback);
   }
   /**
    * Unregisters a previously registered listener callback.
@@ -61,7 +68,7 @@ export class Observable<T> {
    * @param {Callback<T>} callback - The function to be removed from the listeners.
    */
   unlisten(callback: Callback<T>) {
-    this.#listeners.delete(callback);
+    this.listeners.delete(callback);
   }
 
   /**
@@ -69,7 +76,7 @@ export class Observable<T> {
    * After calling dispose, the observable will no longer notify any listeners.
    */
   dispose() {
-    this.#listeners.forEach((listener) => this.unlisten(listener));
+    this.listeners.forEach((listener) => this.unlisten(listener));
   }
 }
 
