@@ -1,4 +1,9 @@
-import { assert, assertEquals, assertFalse } from "jsr:@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertFalse,
+  assertNotEquals,
+} from "jsr:@std/assert";
 
 import {
   Observable,
@@ -66,9 +71,25 @@ Deno.test("Observable", async (t) => {
         assertEquals(num, newValue);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.value = newValue;
+
+      assertCalled(mock);
+    },
+  });
+  await t.step({
+    name: "listen immediate",
+    fn: () => {
+      const defaultVal = 5;
+      const obs = new Observable(defaultVal);
+      const newValue = 10;
+
+      const mock = mockFn((num: number) => {
+        assertNotEquals(num, newValue);
+      });
+
+      obs.listen(mock.fn);
 
       assertCalled(mock);
     },
@@ -84,7 +105,7 @@ Deno.test("Observable", async (t) => {
         assertEquals(num, newValue);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
       obs.unlisten(mock.fn);
 
       obs.value = newValue;
@@ -106,8 +127,8 @@ Deno.test("Observable", async (t) => {
         assertEquals(num, newValue);
       });
 
-      obs.listen(mock1.fn);
-      obs.listen(mock2.fn);
+      obs.listen(mock1.fn, false);
+      obs.listen(mock2.fn, false);
       obs.dispose();
 
       obs.value = newValue;
@@ -153,9 +174,24 @@ Deno.test("ObservableMap", async (t) => {
         assertEquals(val?.oldValue, defaultVals[0][1]);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.set("foo", newVal);
+
+      assertCalled(mock);
+    },
+  });
+  await t.step({
+    name: "listen immediate",
+    fn: () => {
+      const defaultVals: [string, number][] = [["foo", 5], ["bar", 10]];
+      const obs = new ObservableMap<string, number>(defaultVals);
+
+      const mock = mockFn((val: ObservableMapValue<string, number>) => {
+        assertEquals(val, null);
+      });
+
+      obs.listen(mock.fn);
 
       assertCalled(mock);
     },
@@ -173,7 +209,7 @@ Deno.test("ObservableMap", async (t) => {
         assertEquals(val?.oldValue, defaultVals[0][1]);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
       obs.unlisten(mock.fn);
 
       obs.set("foo", newVal);
@@ -193,7 +229,7 @@ Deno.test("ObservableMap", async (t) => {
         assertEquals(val?.oldValue, defaultVals[0][1]);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.delete("foo");
 
@@ -210,7 +246,7 @@ Deno.test("ObservableMap", async (t) => {
         assertEquals(val, null);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.clear();
 
@@ -235,8 +271,8 @@ Deno.test("ObservableMap", async (t) => {
         assertEquals(val?.oldValue, defaultVals[0][1]);
       });
 
-      obs.listen(mock1.fn);
-      obs.listen(mock2.fn);
+      obs.listen(mock1.fn, false);
+      obs.listen(mock2.fn, false);
       obs.dispose();
 
       obs.set("foo", 6);
@@ -277,15 +313,29 @@ Deno.test("ObservableSet", async (t) => {
       const newVal = 20;
 
       const mock = mockFn((val: ObservableSetValue<number>) => {
-        console.log(val);
         assertEquals(val?.idx, 2);
         assertEquals(newVal, val?.newValue);
         assertEquals(val?.oldValue, null);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.add(newVal);
+
+      assertCalled(mock);
+    },
+  });
+  await t.step({
+    name: "listen immediate",
+    fn: () => {
+      const defaultVals: number[] = [5, 10];
+      const obs = new ObservableSet<number>(defaultVals);
+
+      const mock = mockFn((val: ObservableSetValue<number>) => {
+        assertEquals(val, null);
+      });
+
+      obs.listen(mock.fn);
 
       assertCalled(mock);
     },
@@ -298,13 +348,12 @@ Deno.test("ObservableSet", async (t) => {
       const newVal = 20;
 
       const mock = mockFn((val: ObservableSetValue<number>) => {
-        console.log(val);
         assertEquals(val?.idx, 2);
         assertEquals(newVal, val?.newValue);
         assertEquals(val?.oldValue, null);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
       obs.unlisten(mock.fn);
 
       obs.add(newVal);
@@ -324,7 +373,7 @@ Deno.test("ObservableSet", async (t) => {
         assertEquals(val?.oldValue, 10);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.delete(10);
 
@@ -341,7 +390,7 @@ Deno.test("ObservableSet", async (t) => {
         assertEquals(val, null);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.clear();
 
@@ -365,8 +414,8 @@ Deno.test("ObservableSet", async (t) => {
         assertEquals(val?.oldValue, 10);
       });
 
-      obs.listen(mock1.fn);
-      obs.listen(mock2.fn);
+      obs.listen(mock1.fn, false);
+      obs.listen(mock2.fn, false);
       obs.dispose();
 
       obs.add(6);
@@ -428,9 +477,24 @@ Deno.test("ObservableStruct", async (t) => {
         assertEquals(val?.oldValue, defaultVals.foo);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.set("foo", newVal);
+
+      assertCalled(mock);
+    },
+  });
+  await t.step({
+    name: "listen immediate",
+    fn: () => {
+      const defaultVals = { "foo": 5, "bar": 10 };
+      const obs = new ObservableStruct(defaultVals);
+
+      const mock = mockFn((val: ObservableMapValue<string, number>) => {
+        assertEquals(val, null);
+      });
+
+      obs.listen(mock.fn);
 
       assertCalled(mock);
     },
@@ -448,7 +512,7 @@ Deno.test("ObservableStruct", async (t) => {
         assertEquals(val?.oldValue, defaultVals.foo);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
       obs.unlisten(mock.fn);
 
       obs.set("foo", newVal);
@@ -479,7 +543,7 @@ Deno.test("ObservableStruct", async (t) => {
         assertEquals(val?.oldValue, defaultVals.foo);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.delete("foo");
 
@@ -496,7 +560,7 @@ Deno.test("ObservableStruct", async (t) => {
         assertEquals(val, null);
       });
 
-      obs.listen(mock.fn);
+      obs.listen(mock.fn, false);
 
       obs.clear();
 
@@ -521,8 +585,8 @@ Deno.test("ObservableStruct", async (t) => {
         assertEquals(val?.oldValue, defaultVals.foo);
       });
 
-      obs.listen(mock1.fn);
-      obs.listen(mock2.fn);
+      obs.listen(mock1.fn, false);
+      obs.listen(mock2.fn, false);
       obs.dispose();
 
       obs.set("foo", 6);
@@ -543,11 +607,32 @@ Deno.test("observe", async (t) => {
       const obs4 = new ObservableStruct({ foo: 0 });
 
       const mock = mockFn(() => {});
-      const dispose = observe(mock.fn, [obs1, obs2, obs3, obs4]);
+      const dispose = observe(mock.fn, [obs1, obs2, obs3, obs4], false);
       assertNotCalled(mock);
 
       obs1.value = 10;
       assertCalled(mock);
+
+      dispose();
+      mock.called = false;
+
+      obs4.set("foo", 10);
+      assertNotCalled(mock);
+    },
+  });
+  await t.step({
+    name: "can listen immediate",
+    fn: () => {
+      const obs1 = new Observable(0);
+      const obs2 = new ObservableMap<string, number>();
+      const obs3 = new ObservableSet<number>();
+      const obs4 = new ObservableStruct({ foo: 0 });
+
+      const mock = mockFn(() => {});
+      const dispose = observe(mock.fn, [obs1, obs2, obs3, obs4]);
+      assertCalled(mock);
+
+      obs1.value = 10;
 
       dispose();
       mock.called = false;

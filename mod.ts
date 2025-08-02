@@ -58,9 +58,12 @@ export class Observable<T> {
    * Registers a new listener callback to be invoked whenever the observable's value changes.
    *
    * @param {Callback<T>} callback - The function to be called on value changes.
+   * @param {boolean} immediate - Immediately call the callback after its registration. true by default
    */
-  listen(callback: Callback<T>) {
+  listen(callback: Callback<T>, immediate: boolean = true) {
     this.listeners.add(callback);
+
+    if (immediate) callback(this.#value);
   }
   /**
    * Unregisters a previously registered listener callback.
@@ -166,9 +169,13 @@ export class ObservableMap<K, T> extends Map<K, T> {
    * Registers a listener callback to be invoked whenever the map changes.
    *
    * @param {Callback<ObservableMapValue<K, T>>} callback - The function to be called on map changes.
+   * @param {boolean} immediate - Immediately call the callback after its registration. true by default and if true, gives a null update as first callback value
    */
-  listen(callback: Callback<ObservableMapValue<K, T>>) {
-    this.#observer.listen(callback);
+  listen(
+    callback: Callback<ObservableMapValue<K, T>>,
+    immediate: boolean = true,
+  ) {
+    this.#observer.listen(callback, immediate);
   }
 
   /**
@@ -315,9 +322,10 @@ export class ObservableSet<T> extends Set<T> {
    * Registers a listener callback to be invoked whenever the set changes.
    *
    * @param {Callback<ObservableSetValue<T>>} callback - The function to be called on set changes.
+   * @param {boolean} immediate - Immediately call the callback after its registration. true by default and if true, gives a null update as first callback value
    */
-  listen(callback: Callback<ObservableSetValue<T>>) {
-    this.#observer.listen(callback);
+  listen(callback: Callback<ObservableSetValue<T>>, immediate: boolean = true) {
+    this.#observer.listen(callback, immediate);
   }
   /**
    * Unregisters a previously registered listener callback.
@@ -346,6 +354,7 @@ type Dispose = () => void;
  *
  * @param {() => void} callback - The function to be invoked whenever any of the observables change.
  * @param {ValidObservables[]} observableDeps - An array of observables to observe. Each observable must implement the listen and unlisten methods.
+ * @param {boolean} immediate - Immediately call the callback after its registration. true by default and if true, gives a null update as first callback value
  * @returns {Dispose} A dispose function that, when called, will unregister the callback from all provided observables.
  *
  * @example
@@ -371,8 +380,11 @@ type Dispose = () => void;
 export const observe = (
   callback: () => void,
   observableDeps: ValidObservables[],
+  immediate: boolean = true,
 ): Dispose => {
-  observableDeps.forEach((observable) => observable.listen(callback));
+  observableDeps.forEach(
+    (observable) => observable.listen(callback, immediate),
+  );
 
   return () =>
     observableDeps.forEach((observable) => observable.unlisten(callback));
@@ -447,10 +459,15 @@ export class ObservableStruct<T extends OStruct> extends ObservableMap<
    *
    * @template K - The keys of the struct `T`.
    * @param {Callback<ObservableMapValue<K, T[K]>>} callback - The function to be called on property changes. Receives an `ObservableMapValue` detailing the change.
+   * @param {boolean} immediate - Immediately call the callback after its registration. true by default and if true, gives a null update as first callback value
    */
   override listen<K extends keyof T>(
     callback: Callback<ObservableMapValue<K, T[K]>>,
+    immediate: boolean = true,
   ) {
-    super.listen(callback as Callback<ObservableMapValue<string, unknown>>);
+    super.listen(
+      callback as Callback<ObservableMapValue<string, unknown>>,
+      immediate,
+    );
   }
 }
